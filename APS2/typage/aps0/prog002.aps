@@ -1,0 +1,4 @@
+[
+  CONST x int 42;
+  if not x then ECHO "OK";
+]

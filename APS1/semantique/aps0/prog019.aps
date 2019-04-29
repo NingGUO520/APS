@@ -1,4 +1,0 @@
-[
-  FUN REC f (int->int) [x:int] (if (eq x 0) x (f (sub x 1));
-  ECHO (f 10)
-]

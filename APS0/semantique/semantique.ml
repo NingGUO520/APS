@@ -51,13 +51,19 @@ match v with
 InN(n)->n
 |_->failwith "probmème get_value"
 
-
 let rec print_env env = 
 match env with
 |[] -> ()
-|a::l-> let (x,v) = a in ( print_string (x^" ");			
-			print_env l)
-		
+|a::l-> let (x,v) = a in 
+			match  v with
+			| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
+							print_env l)
+			| InF(e,args,env_f) -> ( print_string (x^" Inf\n");	print_env l)		
+			
+			| InFR (nom,valeur )->	( print_string (x^" InFR\n");	print_env l)				
+			| _-> ( print_string (x^" \n");			
+							print_env l)
+			
 
 let rec appli_args args list_value = 
 	match args with
@@ -77,6 +83,7 @@ and appli_func f list_v env =
 	match f with
 	|InF(e,args,env_f)-> let func_env = appli_args args list_v in 
 				let nouveau_env = func_env@env_f@env in 
+					print_env env_f;
 					eval_expr e nouveau_env 
 					
 	|InFR(nom,func)-> appli_func func list_v env

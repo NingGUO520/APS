@@ -1,0 +1,16 @@
+aps2/prog200.aps
+program([const(xs,vec(int),alloc(5)),setLval(nth(xs,0),1),setLval(nth(xs,1),2),setLval(nth(xs,2),3),setLval(nth(xs,3),4),setLval(nth(xs,4),5),echo(nth(xs,0)),echo(nth(xs,1)),echo(nth(xs,2)),echo(nth(xs,2)),echo(nth(xs,4))])
+aps2/prog201.aps
+program([const(xs,vec(int),alloc(5)),var(i,int),set(i,0),while(lt(i,len(xs)),[setLval(nth(xs,i),add(i,1)),set(i,add(i,1))])])
+aps2/prog202.aps
+program([proc(fill,[(xs,vec(int))],[var(i,int),set(i,0),while(lt(i,len(xs)),[const(n,int,add(i,1)),setLval(nth(xs,i),n),set(i,n)])]),const(xs,vec(int),alloc(5)),call(fill,[xs])])
+aps2/prog203.aps
+program([const(xs,vec(vec(bool)),alloc(3)),setLval(nth(xs,0),alloc(2)),setLval(nth(xs,1),alloc(3)),setLval(nth(xs,2),alloc(4)),setLval(nth(nth(xs,0),0),true),setLval(nth(nth(xs,0),1),true),setLval(nth(nth(xs,1),0),false),setLval(nth(nth(xs,1),1),false),setLval(nth(nth(xs,1),2),false),setLval(nth(nth(xs,2),0),true),setLval(nth(nth(xs,2),1),true),setLval(nth(nth(xs,2),2),true),setLval(nth(nth(xs,2),3),true)])
+aps2/prog204.aps
+program([const(xss,vec(vec(bool)),alloc(3)),var(i,int),set(i,0),while(lt(i,len(xss)),[setLval(nth(xss,i),alloc(add(i,1))),set(i,add(i,1))]),setLval(nth(nth(xss,0),0),true)])
+aps2/prog205.aps
+program([proc(map,[(f,typeFunc([void],void)),(xs,vec(void))],[var(i,int),set(i,0),while(lt(i,len(xs)),[setLval(nth(xs,i),astExprs(f,[nth(xs,i)])),set(i,add(i,1))])]),const(xs,vec(bool),alloc(4)),setLval(nth(xs,0),true),setLval(nth(xs,1),true),setLval(nth(xs,2),false),setLval(nth(xs,3),true),call(map,[astFuncExpr([(x,bool)],not(x)),xs])])
+aps2/prog206.aps
+program([funRec(fold,void,[(f,typeFunc([void],void)),(xs,vec(void)),(a,void),(i,int)],if(lt(i,len(xs)),astExprs(f,[nth(xs,i),astExprs(fold,[f,xs,a,add(i,1)])]),a)),const(xs,vec(int),alloc(5)),setLval(nth(xs,0),3),setLval(nth(xs,1),3),setLval(nth(xs,2),3),setLval(nth(xs,3),3),setLval(nth(xs,4),3),echo(astExprs(fold,[astFuncExpr([(x,int),(y,int)],add(x,y)),xs,0,0]))])
+aps2/prog207.aps
+program([proc(bubble,[(xs,vec(int))],[const(ln,int,len(xs)),var(i,int),set(i,1),while(lt(i,ln),[const(X,int,nth(xs,sub(i,1))),ifProc(lt(nth(xs,i),X),[setLval(nth(xs,sub(i,1)),nth(xs,i)),setLval(nth(xs,i),X),set(i,add(i,1))],[set(i,add(i,1))])])]),const(xs,vec(int),alloc(5)),setLval(nth(xs,0),6),setLval(nth(xs,1),5),setLval(nth(xs,2),4),setLval(nth(xs,3),3),setLval(nth(xs,4),2),call(bubble,[xs])])

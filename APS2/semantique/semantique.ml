@@ -2,16 +2,58 @@ open Ast
 
 type valeur = Vide | InN of int | InF of expr* (string list)* (string*valeur) list 
 | InFR of string*valeur | InA of int 
-| InP of block *  (string list)* (string*valeur) list
+| InP of block * (string list) * (string*valeur) list
 | InPR of string*valeur
+| InB of int*int 
+| Any 
 
 let adresse = ref 0
+
+let string_of_valeur v = 
+match v with
+ Vide -> "Vide  "
+ | InN (n)-> "InN ("^(string_of_int n )^")"
+ | InF (expr,args,env)->  "InF "
+| InFR(f,v)-> "InFR "
+| InA (a)->   "InA "
+| InP (bloc, args, env)-> "InP "
+| InPR (p,v) ->   "InPR "
+| InB (a, n )->   "InB ("^(string_of_int a )^" , "^(string_of_int n )^")"
+| Any ->  "Any"
+
+(***************** APS2 *****************)
+let allocn memoire taille =
+	
+	let a = !adresse in 
+	print_endline ("adresse = "^(string_of_int a ));
+
+	let rec alloc_bloc mem length =
+		
+		match length with
+		0 -> a, mem 
+		| _ -> 
+			   if not (List.mem_assoc !adresse mem) then 
+				 (	
+				 	let nouveau_mem =  (!adresse,Any)::mem  in 
+				 	adresse := !adresse + 1 ; 
+				 	alloc_bloc nouveau_mem (length-1)
+				 )
+			 	else failwith "allocation memoire tableau error"
+
+	in alloc_bloc memoire taille
+(***************** APS2 *****************)
+
+
+	
+		
+	
+	
 
 
 
 let alloc memoire  = 
 	if not (List.mem_assoc !adresse memoire) then 
-		(!adresse,-1)::memoire   (* -1 représente any *)
+		(!adresse,Any)::memoire   
 	else failwith "adresse memoire existe deja "
 
 let get_int v = 
@@ -35,12 +77,12 @@ match env with
 		
 
 		
-let modifer_mem memoire a v =
-	let value = get_int v in 
+let modifer_mem memoire a v = 
 	if List.mem_assoc a memoire then 
 		let nouveau = List.remove_assoc a memoire in 
-			(a,value)::nouveau
-	else failwith "adresse not found in memoire"
+			print_endline ("set adresse "^(string_of_int a)^" valeur "^(string_of_valeur v));
+			(a,v)::nouveau
+	else failwith ("adresse "^(string_of_int a)^" not found in memoire")
 
 
 let not x = 
@@ -69,12 +111,21 @@ let eval_prim op n1 n2 =
 	|Mul -> n1 * n2
 	|Div -> n1/n2
 
-let rec getValeur id env memoire=
+let rec getValeur id env =
 match env with
 |[]-> failwith ("variable "^id^" not found")
 |a::l-> let (x,v) = a in 
 		if String.equal x id then v 
-		else getValeur id l memoire
+		else getValeur id l 
+
+(* Obtenir la valeur dans la memoire depuis son adresse *)
+let rec getVal_adresse ad memoire = 
+match memoire with
+ []-> failwith ("adresse "^(string_of_int ad)^" not found")
+|x::l-> let (a, v) = x in
+			if a == ad then v 
+			else getVal_adresse ad l  
+		
 	
 let string_of_arg arg = 
 match arg with
@@ -124,8 +175,9 @@ let rec appli_args args list_value =
 (*Evaluation de expression*)	
 let rec get_list_value exprs env memoire = 
 	match exprs with
-	|Expr(e)-> [eval_expr e env memoire]
-	|Exprs(e,es)->(eval_expr e env memoire)::(get_list_value es env memoire) 
+	|Expr(e)-> let v, mem2 = eval_expr e env memoire in [v]
+	|Exprs(e,es)->let v, mem2 = eval_expr e env memoire in 
+			v::(get_list_value es env memoire) 
 
 (*Application d'une function/function recursive*)
 and appli_func f list_v env memoire = 
@@ -139,41 +191,88 @@ and appli_func f list_v env memoire =
 
 
 
-
+(* Expressions *)
 and eval_expr expr env memoire = 
 match expr with 
-|ASTBool b -> if b == true then InN(1) else InN(0)
-|ASTNum n -> InN(n)
-|ASTId id -> let v = getValeur id env memoire in 
+ASTBool b -> if b == true then InN(1),memoire else InN(0),memoire
+|ASTNum n -> InN(n),memoire
+|ASTId id -> let v = getValeur id env  in 
 		 (	match v with
-			|InA(n)-> let value = List.assoc n memoire in InN(value)   (*ID1*)
-			|_ -> v 	(*ID2*)    
+			|InA(n)-> let value = List.assoc n memoire in value,memoire  (*ID1*)
+			|_ -> v,memoire 	(*ID2*)    
 		 )
 |ASTOPrim(op,e1,e2)-> 
-		let v1 = get_int(eval_expr e1 env memoire) and v2 = get_int(eval_expr e2 env memoire) in 
-			InN(eval_prim op v1 v2)
-|ASTIf(e1,e2,e3)-> let v1 = get_int(eval_expr e1 env memoire) in 
-			if v1 == 1 then  eval_expr e2 env memoire
-			else if v1 == 0 then eval_expr e3 env memoire
+		let n1, mem2 = eval_expr e1 env memoire in
+		let v1 = get_int n1 in 
+		let	n2, mem3 = eval_expr e2 env mem2 in 
+		let v2 = get_int n2 in 
+			InN(eval_prim op v1 v2), mem3
+
+|ASTIf(e1,e2,e3)-> let v, mem2 = eval_expr e1 env memoire in 
+			let v1 = get_int v in 
+			if v1 == 1 then  eval_expr e2 env mem2
+			else if v1 == 0 then eval_expr e3 env mem2
 			else failwith "évaluation if erreur"
 
-|ASTFuncExpr(args,e)->let l_args = getArgs args in InF(e,l_args,env)
-|ASTExprs(expr,exprs)-> let f = eval_expr expr env memoire in 
-			 let l = get_list_value exprs env memoire in 
-				appli_func f l env memoire
+|ASTFuncExpr(args,e)->
+				let l_args = getArgs args in InF(e,l_args,env),memoire
+(* App *)
+|ASTExprs(e,es)-> 
+			let f, mem2 = eval_expr e env memoire in 
+			 let l = get_list_value es env mem2 in 
+				appli_func f l env mem2
 |ASTBPrim(bp,e1,e2) -> 
-		let v1 = get_int(eval_expr e1 env memoire) and v2 = get_int(eval_expr e2 env memoire) in 
-			InN(eval_bprim bp v1 v2)
-|ASTNot(n,e) ->	let v = get_int(eval_expr e env memoire) in 
-		 		InN(not v)
+		let n1, mem2 = eval_expr e1 env memoire in 
+		let v1 = get_int n1 in 
+		let	n2, mem3 = eval_expr e2 env mem2 in 
+		let v2 = get_int n2 in 
+			InN(eval_bprim bp v1 v2),mem3
+|ASTNot(n,e) ->	
+			let value, mem2 = eval_expr e env memoire in 
+			let v = get_int value in 
+		 		InN(not v),mem2
 
-	
+(********************* APS2 *********************)
+|Len(e)-> 
+		let InB(a,n), res_mem = eval_expr e env memoire in 
+			InN(n),res_mem
+
+|Alloc(e)-> 
+		let v, res_mem = eval_expr e env memoire in 
+		let n = get_int v in 
+			let ad, mem2 = allocn res_mem n in 
+				InB(ad,n), mem2
+|ASTNth(e1,e2)->
+			 let InB(a,len), res_mem = eval_expr e1 env memoire in 
+				let v, mem2 = eval_expr e2 env res_mem in 
+				let i = get_int v in 
+					(getVal_adresse (a+i) mem2), mem2
+
+(* Valeurs gauches *)
+let rec eval_lval lv env memoire = 
+match lv  with
+IdentLval(id)-> 
+			let v = getValeur id env  in (
+				match v with
+				 InA(a) -> a, memoire
+				| InB(a,n) -> a,memoire
+				| _ -> failwith "Evaluation lval ident error"
+			) 
+|Nth (lval,expr)->	
+		let a, res_mem = eval_lval lval env memoire in 
+			let v, mem2 = eval_expr expr env res_mem in 
+			let i = get_int v in 
+				(a+i), memoire 
+
+(********************* APS2 *********************)
+
+
 (*Déclaration*)
 let eval_dec dec env memoire= 
 match dec with
 |Const(s,t,expr)->
-	let v = eval_expr expr env memoire in 
-		(s,v)::env , memoire
+	let v , res_mem= eval_expr expr env memoire in 
+		(s,v)::env , res_mem
 		
 |Fun(s,t,args,expr)->
 	let v = dec_func expr args in
@@ -213,30 +312,36 @@ Stats(stat)->
 and eval_stat stat env memoire w =
 	match stat with
 	Echo(expr)->
-		let res = eval_expr expr env memoire in memoire,res::w
+		let res, res_mem = eval_expr expr env memoire in res_mem,res::w
 	
-	|Set (id,expr) -> let v = eval_expr expr env memoire in 
-					let InA(a) =  getValeur id env memoire  in 
-					let mem = modifer_mem memoire a v in mem, w 
+	|Set (id,expr) -> let v, mem2 = eval_expr expr env memoire in 
+					let InA(a) =  getValeur id env   in 
+					let mem = modifer_mem mem2 a v in mem, w 
 	
-	|IfProc(b ,bloc1,bloc2)-> let v = get_int(eval_expr b env memoire) in 
-							if v == 1 then eval_bloc bloc1 env memoire w 
-							else if v == 0 then eval_bloc bloc2 env memoire w 
+	|IfProc(b, bloc1, bloc2)-> let v, res_mem = eval_expr b env memoire in 
+							let n = get_int v in 
+							if n == 1 then eval_bloc bloc1 env res_mem w 
+							else if n == 0 then eval_bloc bloc2 env res_mem w 
 							else failwith "évaluation if erreur"
 	
-	|ASTWhile(b, bloc)-> let v = get_int(eval_expr b env memoire) in 
-						if v == 0 then memoire,w 
-						else if v == 1 then 
-						let res_mem, res_w = eval_bloc bloc env memoire w in
-						eval_stat stat env res_mem res_w 
+	|ASTWhile(b, bloc)-> let v, res_mem =  eval_expr b env memoire in 
+						let n = get_int v in 
+						if n == 0 then res_mem, w 
+						else if n == 1 then 
+						let mem2, res_w = eval_bloc bloc env res_mem w in
+						eval_stat stat env mem2 res_w 
 						else failwith "évaluation condition while error" 
 						
 	
-	|ASTCall(idproc, exprs)-> let p = getValeur idproc env memoire in 			
+	|ASTCall(idproc, exprs)-> let p = getValeur idproc env  in 			
 						let l_v = get_list_value exprs env memoire in 
 						appli_proc p l_v env memoire w 
 
-
+	| SetLval(lv,expr)->
+				let v, res_mem = eval_expr expr env memoire in 
+					let a, mem2 =  eval_lval lv env res_mem  in 
+					let mem = modifer_mem mem2 a v in mem, w 
+	
 
 (* Bloc et suite de commandes*)
 and eval_bloc bk env memoire w = 
