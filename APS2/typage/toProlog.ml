@@ -204,14 +204,7 @@ Echo(expr)->(
 	print_expr expr;
 	Printf.printf")"
 )
-|Set(var,expr)->(
-	Printf.printf"set";
-	Printf.printf"(";
-	Printf.printf"%s" var;
-	Printf.printf",";
-	print_expr expr;
-	Printf.printf")";
-)
+
 |IfProc(expr,block1,block2)->(
 	Printf.printf"ifProc";
 	Printf.printf"(";

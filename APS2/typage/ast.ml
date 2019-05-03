@@ -18,7 +18,7 @@ and exprs = Expr of expr | Exprs of expr*exprs
 type lval = IdentLval of string | Nth of lval*expr
 
 type cmds = Stats of stat | Dec of dec*cmds | Stat of stat*cmds
-and stat = Echo of expr | Set of string*expr | IfProc of expr*block*block 
+and stat = Echo of expr | IfProc of expr*block*block 
 | ASTWhile of expr*block | ASTCall of string*exprs | SetLval of lval*expr
 and block = CmdsBlock of cmds
 and dec = Const of string*letype*expr |Fun of string*letype*args*expr |FunRec of string*letype*args*expr

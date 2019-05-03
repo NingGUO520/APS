@@ -93,7 +93,6 @@ lval:
 
 stat:
 |ECHO expr {Echo($2)}
-|SET IDENT expr {Set($2,$3)}
 |IF_PROC expr block block {IfProc($2,$3,$4)}
 |WHILE expr block {ASTWhile($2,$3)}
 |CALL IDENT exprs {ASTCall($2,$3)}
