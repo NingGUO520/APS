@@ -42,7 +42,7 @@ typeDec(G,const(X,T,E),[(X,T)|G]):-typeExpr(G,E,T).
 typeDec(G,fun(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
 
 /*Déclaration de fonction récursive*/
-typeDec(G,funRec(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,(X,typeFunc(TS,T)),GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
+typeDec(G,funRec(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,[(X,typeFunc(TS,T))],GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
 
 
 /*Suites de commandes*/

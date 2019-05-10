@@ -68,11 +68,13 @@ types:
 
 dec:
 | CONST IDENT letype expr {Const($2,$3,$4)}
-| FUN IDENT letype LCRO args RCRO LCRO cmds RCRO  {Fun($2,$3,$5,$8)}
-| FUN REC IDENT letype LCRO args RCRO LCRO cmds RCRO  {FunRec($3,$4,$6,$9)}
+| FUN IDENT letype LCRO args RCRO expr  {Fun($2,$3,$5,$7)}
+| FUN REC IDENT letype LCRO args RCRO expr {FunRec($3,$4,$6,$8)}
 | VAR IDENT letype {Var($2,$3)}
 | PROC IDENT LCRO args RCRO block {ASTProc($2,$4,$6)}
 | PROC REC IDENT LCRO args RCRO block {ASTProcRec($3,$5,$7)}
+| FUN IDENT letype LCRO args RCRO block  {FunPro($2,$3,$5,$7)}
+| FUN REC IDENT letype LCRO args RCRO block  {FunProRec($3,$4,$6,$8)}
 ;
 
 

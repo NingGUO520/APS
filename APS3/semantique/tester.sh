@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for FILE in aps2/*.aps
+for FILE in aps3/*.aps
 do 
 	echo $FILE
 	./evaluer $FILE

@@ -170,6 +170,16 @@ IdentLval(s) -> Printf.printf"%s" s
 	Printf.printf")"	
 )
 
+let print_ret ret = 
+match ret with
+Return(expr) -> (
+	Printf.printf"ret";
+	Printf.printf"(";
+	print_expr expr;
+	Printf.printf")"	
+)
+
+
 
 let rec print_cmds cmds = 
 match cmds with
@@ -185,6 +195,9 @@ Stats(stat)->(
 	print_stat stat;
 	Printf.printf",";
 	print_cmds cmds;
+)
+|Ret(ret)->(
+	print_ret ret
 )
 
 
@@ -204,6 +217,7 @@ Echo(expr)->(
 	print_expr expr;
 	Printf.printf")"
 )
+
 |IfProc(expr,block1,block2)->(
 	Printf.printf"ifProc";
 	Printf.printf"(";
@@ -319,7 +333,38 @@ Const(s,t,expr)->(
 	print_block block;
 	Printf.printf")"
 )
+|FunPro(ident,t,args,block )->(
 
+	Printf.printf"funPro";
+	Printf.printf"(";
+	Printf.printf"%s" ident;
+	Printf.printf",";
+	print_type t;
+	Printf.printf",";
+	Printf.printf"[";
+	print_args args;
+	Printf.printf"]";
+	Printf.printf",";
+	print_block block;
+	Printf.printf")"
+
+)
+|FunProRec(ident,t,args,block )->(
+
+	Printf.printf"funProRec";
+	Printf.printf"(";
+	Printf.printf"%s" ident;
+	Printf.printf",";
+	print_type t;
+	Printf.printf",";
+	Printf.printf"[";
+	print_args args;
+	Printf.printf"]";
+	Printf.printf",";
+	print_block block;
+	Printf.printf")"
+
+)
 
 
 

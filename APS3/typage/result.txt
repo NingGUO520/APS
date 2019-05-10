@@ -6,5 +6,9 @@ aps3/prog302.aps
 program([funPro(f,int,[(x,bool)],[ifProc(x,[ret(42)],[echo(x)]),ret(41)]),echo(astExprs(f,[true]))])
 aps3/prog303.aps
 program([funPro(f,int,[(x,bool)],[ifProc(x,[ret(42)],[echo(x)]),ret(41)]),echo(astExprs(f,[false]))])
+aps3/testFunREc.aps
+program([funProRec(f,int,[(x,int)],[ifProc(eq(x,42),[ret(x)],[ret(astExprs(f,[sub(x,1)]))])]),echo(astExprs(f,[45]))])
 aps3/testIf.aps
 program([ifProc(true,[ret(42)],[echo(5)])])
+
+[ifProc(eq(x,42),[ret(x)],[ret(astExprs(f,[sub(x,1)]))])]

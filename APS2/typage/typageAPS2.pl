@@ -71,14 +71,14 @@ typeDec(G,const(X,T,E),[(X,T)|G]):-typeExpr(G,E,T).
 /*Déclaration fonction*/
 typeDec(G,fun(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
 /*Déclaration de fonction récursive*/
-typeDec(G,funRec(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,(X,typeFunc(TS,T)),GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
+typeDec(G,funRec(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,[(X,typeFunc(TS,T))],GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
 /*La déclaration d’une variable*/
 typeDec(G,var(X,T),[(X,T)|G]).
 /*La déclarations de procédures et procédures récursives*/
 /*Déclaration de procédures*/
 typeDec(G,proc(X,ARGS,BLOCK),[(X,typeFunc(LT,void))|G]):-append(G,ARGS,GG),typeBlock(GG,BLOCK,void),getTypes(ARGS,LT).
 /*Déclaration de procédures récursive*/
-typeDec(G,procRec(X,ARGS,BLOCK),[(X,typeFunc(LT,void))|G]):- getTypes(ARGS,LT),append(G,ARGS,G2),append(G2,(X,typeFunc(LT,void)),GG),typeBlock(GG,BLOCK,void).
+typeDec(G,procRec(X,ARGS,BLOCK),[(X,typeFunc(LT,void))|G]):- getTypes(ARGS,LT),append(G,ARGS,G2),append(G2,[(X,typeFunc(LT,void))],GG),typeBlock(GG,BLOCK,void).
 
 
 /*Suites de commandes*/

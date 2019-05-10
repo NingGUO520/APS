@@ -22,9 +22,10 @@ type cmds = Stats of stat | Dec of dec*cmds | Stat of stat*cmds | Ret of ret
 and stat = Echo of expr | IfProc of expr*block*block 
 | ASTWhile of expr*block | ASTCall of string*exprs | SetLval of lval*expr
 and block = CmdsBlock of cmds
-and dec = Const of string*letype*expr |Fun of string*letype*args*cmds |FunRec of string*letype*args*cmds
+and dec = Const of string*letype*expr |Fun of string*letype*args*expr |FunRec of string*letype*args*expr
 		|Var of string*letype | ASTProc of string*args*block | ASTProcRec of string*args*block
-type prog = Cmds of cmds
+		|FunPro of string*letype*args*block |FunProRec of string*letype*args*block
+and prog = Cmds of cmds
 let string_of_op op =
 	match op with
 		 Add ->"add"
