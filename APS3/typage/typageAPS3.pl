@@ -11,9 +11,6 @@ typeExprs(G,[E|EL],[T|TL]):-typeExpr(G,E,T),typeExprs(G,EL,TL).
 getTypes([(_,T)],[T]).
 getTypes([(_,T)|ARGS],[T|LT]):-getTypes(ARGS,LT).
 
-
-/*********************APS0********************/
-
 /*Expression*/
 typeExpr(_,true,bool).
 typeExpr(_,false,bool).
@@ -35,8 +32,6 @@ typeExpr(G,astFuncExpr(ARGS,E),typeFunc(TS,T)):-getTypes(ARGS,TS),append(G,ARGS,
 /*Application*/
 typeExpr(G,astExprs(F,LE),T):-typeExpr(G,F,typeFunc(LT,T)),typeExprs(G,LE,LT).
 
-
-/*********************APS2********************/
 /*ALLOC*/
 typeExpr(G,alloc(E),vec(_)):-typeExpr(G,E,int).
 /*NTH*/
@@ -44,11 +39,11 @@ typeExpr(G,nth(E1,E2),T):-typeExpr(G,E1,vec(T)),typeExpr(G,E2,int).
 /*LEN*/
 typeExpr(G,len(E),int):-typeExpr(G,E,vec(_)).
 
-
-
 /*Instructions*/
 /*ECHO*/
 typeStat(G,echo(E),void):-typeExpr(G,E,int).
+typeStat(G,echo(E),void):-typeExpr(G,E,bool).
+
 /*Set*/
 typeStat(G,set(X,E),void):-typeExpr(G,X,T),typeExpr(G,E,T).
 
@@ -100,31 +95,28 @@ typeDec(G,procRec(X,ARGS,BLOCK),[(X,typeFunc(LT,void))|G]):- getTypes(ARGS,LT),a
 typeDec(G,funPro(X,T,ARGS,BLOC),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,GG),typeBlock(GG,BLOC,T),getTypes(ARGS,TS).
 
 /*Déclaration de fonction procédurales récursive*/
-typeDec(G,funProRec(X,T,ARGS,BLOC),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,(X,typeFunc(TS,T)),GG),typeBlock(GG,BLOC,T),getTypes(ARGS,TS).
+typeDec(G,funProRec(X,T,ARGS,BLOC),[(X,typeFunc(TS,T))|G]):-getTypes(ARGS,TS),append(G,ARGS,G2),append(G2,(X,typeFunc(TS,T)),GG),typeBlock(GG,BLOC,T).
 
-/*********************APS3********************/
 
 
 /*Suites de commandes*/
+
+/* RET */
+typeCmds(G,[ret(E),epsilon],T):-typeExpr(G,E,T).
 /*La suite commence par une déclaration*/
 typeCmds(G,[DEC|CMDS],void):-typeDec(G,DEC,G2),typeCmds(G2,CMDS,void).
 /*La suite commence par une instruction*/
 typeCmds(G,[STAT|CMDS],void):-typeStat(G,STAT,void),typeCmds(G,CMDS,void).
 /*suite vide*/
 typeCmds(_,[epsilon],void).
-/*Blocs de commandes*/
 
-
-
-/*********************APS3********************/
 /* STAT0 */
 typeCmds(G,[S|CS],T):-typeStat(G,S,void),typeCmds(G,CS,T).
 
 /* STAT1 */
 typeCmds(G,[S|CS],T):-typeStat(G,S,t_void),typeCmds(G,CS,T).
 
-/* RET */
-typeCmds(G,[ret(E),epsilon],T):-typeExpr(G,E,T).
+/*Blocs de commandes*/
 typeBlock(G,CMDS,T):-append(CMDS,[epsilon],L),typeCmds(G,L,T).
 
 /*********************APS3********************/

@@ -1,0 +1,1 @@
+isliste([]):-true.

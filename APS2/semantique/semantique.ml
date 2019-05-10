@@ -260,7 +260,7 @@ IdentLval(id)->
 				| _ -> failwith "Evaluation lval ident error"
 			) 
 |Nth (lval,expr)->	
-		let a, res_mem = eval_lval lval env memoire in 
+		let InB(a,n), res_mem = eval_expr lval env memoire in 
 			let v, mem2 = eval_expr expr env res_mem in 
 			let i = get_int v in
 			print_endline ("a = "^(string_of_int a)^"i = "^(string_of_int i)); 

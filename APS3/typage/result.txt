@@ -7,3 +7,4 @@ program([funPro(f,int,[(x,bool)],[ifProc(x,[ret(42)],[echo(x)]),ret(41)]),echo(a
 aps3/prog303.aps
 program([funPro(f,int,[(x,bool)],[ifProc(x,[ret(42)],[echo(x)]),ret(41)]),echo(astExprs(f,[false]))])
 aps3/testIf.aps
+program([ifProc(true,[ret(42)],[echo(5)])])
