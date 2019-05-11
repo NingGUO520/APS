@@ -100,21 +100,27 @@ typeDec(G,funProRec(X,T,ARGS,BLOC),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),ap
 
 /*Suites de commandes*/
 
-/* RET */
-typeCmds(G,[ret(E),epsilon],T):-typeExpr(G,E,T).
-/*La suite commence par une déclaration*/
-typeCmds(G,[DEC|CMDS],void):-typeDec(G,DEC,G2),typeCmds(G2,CMDS,void).
+
+/* DEC */
+typeCmds(G,[DEC|CMDS],T):-typeDec(G,DEC,G2),typeCmds(G2,CMDS,T).
 /*La suite commence par une instruction*/
 typeCmds(G,[STAT|CMDS],void):-typeStat(G,STAT,void),typeCmds(G,CMDS,void).
-/*suite vide*/
-typeCmds(_,[epsilon],void).
 
 /* STAT0 */
 typeCmds(G,[STAT|CMDS],T):-typeStat(G,STAT,void),typeCmds(G,CMDS,T).
 
 /* STAT1 */
-typeCmds(G,[STAT|CMDS],T):-typeStat(G,STAT,T),typeCmds(G,CMDS,T).
-# typeCmds(G,[STAT|CMDS],T):-typeStat(G,STAT,t_void),typeCmds(G,CMDS,T).
+typeCmds(G,[STAT|CMDS],T):-typeStat(G,STAT,t_void),typeCmds(G,CMDS,T).
+
+/*J'ai ajoute par moi-meme*/
+typeCmds(G,[STAT,epsilon],T):-typeStat(G,STAT,T).
+
+/* RET */
+typeCmds(G,[ret(E),epsilon],T):-typeExpr(G,E,T).
+/* END */
+typeCmds(_,[epsilon],void).
+
+
 
 /*Blocs de commandes*/
 typeBlock(G,CMDS,T):-append(CMDS,[epsilon],L),typeCmds(G,L,T).

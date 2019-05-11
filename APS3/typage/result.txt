@@ -11,4 +11,12 @@ program([funProRec(f,int,[(x,int)],[ifProc(eq(x,42),[ret(x)],[ret(astExprs(f,[su
 aps3/testIf.aps
 program([ifProc(true,[ret(42)],[echo(5)])])
 
-[ifProc(eq(x,42),[ret(x)],[ret(astExprs(f,[sub(x,1)]))])]
+funProRec(f,int,[(x,int)],[ifProc(eq(x,42),[ret(x)],[ifProc(lt(x,42),[ret(astExprs(f,[add(x,1)]))],[ret(astExprs(f,[sub(x,1)]))])])])
+
+[ifProc(eq(x,42),[ret(x)],[ifProc(lt(x,42),[ret(astExprs(f,[add(x,1)]))],[ret(astExprs(f,[sub(x,1)]))])])]
+
+ifProc(eq(x,42),[ret(x)],[ifProc(lt(x,42),[ret(astExprs(f,[add(x,1)]))],[ret(astExprs(f,[sub(x,1)]))])])
+
+[ifProc(lt(x,42),[ret(astExprs(f,[add(x,1)]))],[ret(astExprs(f,[sub(x,1)]))])]
+
+ifProc(lt(x,42),[ret(astExprs(f,[add(x,1)]))],[ret(astExprs(f,[sub(x,1)]))])
