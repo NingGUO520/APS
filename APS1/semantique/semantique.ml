@@ -215,10 +215,13 @@ and eval_stat stat env memoire w =
 	Echo(expr)->
 		let res = eval_expr expr env memoire in memoire,res::w
 	
-	|Set (id,expr) -> let v = eval_expr expr env memoire in 
-					let InA(a) =  getValeur id env memoire  in 
-					let mem = modifer_mem memoire a v in mem, w 
-	
+	|Set (id,expr) -> (let v = eval_expr expr env memoire in 
+					let v2 =  getValeur id env memoire  in 
+					match v2 with
+					| InA(a) -> let mem = modifer_mem memoire a v in mem, w 
+					| _ -> failwith "set erreur"
+					
+	)
 	|IfProc(b ,bloc1,bloc2)-> let v = get_int(eval_expr b env memoire) in 
 							if v == 1 then eval_bloc bloc1 env memoire w 
 							else if v == 0 then eval_bloc bloc2 env memoire w 
