@@ -7,8 +7,6 @@ type valeur = Vide | InN of int | InF of expr* (string list)* (string*valeur) li
 | InB of int*int 
 | Any 
 
-let adresse = ref 0
-
 let string_of_valeur v = 
 match v with
  Vide -> "Vide  "
@@ -21,40 +19,33 @@ match v with
 | InB (a, n )->   "InB ("^(string_of_int a )^" , "^(string_of_int n )^")"
 | Any ->  "Any"
 
-(***************** APS2 *****************)
-let allocn memoire taille =
+(***************** APS2 Gestion des memoires *****************)
+let allocn mem1 taille =
 	
-	let a = !adresse in 
-	print_endline ("adresse = "^(string_of_int a ));
+	let mem2 = Array.make taille Any in
+	let mem3 = Array.append mem1 mem2 in 
+		(Array.length mem1),mem3
 
-	let rec alloc_bloc mem length =
-		
-		match length with
-		0 -> a, mem 
-		| _ -> 
-			   if not (List.mem_assoc !adresse mem) then 
-				 (	
-				 	let nouveau_mem =  (!adresse,Any)::mem  in 
-				 	adresse := !adresse + 1 ; 
-				 	alloc_bloc nouveau_mem (length-1)
-				 )
-			 	else failwith "allocation memoire tableau error"
+let modifer_mem mem1 a v = 
+	if a < (Array.length mem1) then (
+		(* print_endline ("set adresse "^(string_of_int a)^" valeur "^(string_of_valeur v)); *)
+		Array.set mem1 a v ; 
+		mem1 )
+	else failwith ("adresse "^(string_of_int a)^" n'existe pas dans la memoire" )
 
-	in alloc_bloc memoire taille
-(***************** APS2 *****************)
-
-
+(* Obtenir la valeur dans la memoire depuis son adresse *)
+let rec getVal_memoire ad mem1 = 
+	if ad < (Array.length mem1) then 
+		Array.get mem1 ad 
+	else failwith ("adresse "^(string_of_int ad)^" n'existe pas dans la memoire" )
 	
-		
-	
-	
-
-
-
 let alloc memoire  = 
-	if not (List.mem_assoc !adresse memoire) then 
-		(!adresse,Any)::memoire   
-	else failwith "adresse memoire existe deja "
+	 allocn memoire 1 
+
+(***************** APS2 Gestion des memoires *****************)
+
+
+
 
 let get_int v = 
 	match v with
@@ -77,12 +68,6 @@ match env with
 		
 
 		
-let modifer_mem memoire a v = 
-	if List.mem_assoc a memoire then 
-		let nouveau = List.remove_assoc a memoire in 
-			print_endline ("set adresse "^(string_of_int a)^" valeur "^(string_of_valeur v));
-			(a,v)::nouveau
-	else failwith ("adresse "^(string_of_int a)^" not found in memoire")
 
 
 let not x = 
@@ -118,15 +103,7 @@ match env with
 		if String.equal x id then v 
 		else getValeur id l 
 
-(* Obtenir la valeur dans la memoire depuis son adresse *)
-let rec getVal_adresse ad memoire = 
-match memoire with
- []-> failwith ("adresse "^(string_of_int ad)^" not found")
-|x::l-> let (a, v) = x in
-			if a == ad then v 
-			else getVal_adresse ad l  
-		
-	
+
 let string_of_arg arg = 
 match arg with
 ASTArg(arg,t)->arg
@@ -198,7 +175,7 @@ ASTBool b -> if b == true then InN(1),memoire else InN(0),memoire
 |ASTNum n -> InN(n),memoire
 |ASTId id -> let v = getValeur id env  in 
 		 (	match v with
-			|InA(n)-> let value = List.assoc n memoire in value,memoire  (*ID1*)
+			|InA(n)-> let value = Array.get memoire n in value,memoire  (*ID1*)
 			|_ -> v,memoire 	(*ID2*)    
 		 )
 |ASTOPrim(op,e1,e2)-> 
@@ -233,20 +210,27 @@ ASTBool b -> if b == true then InN(1),memoire else InN(0),memoire
 		 		InN(not v),mem2
 
 (********************* APS2 *********************)
-|Len(e)-> 
-		let InB(a,n), res_mem = eval_expr e env memoire in 
-			InN(n),res_mem
+|Len(e)-> (
+		let v, res_mem = eval_expr e env memoire in 
+		match v with
+		| InB(a,n) -> InN(n),res_mem
+		| _ -> failwith "Evaluation len error: cette expression n'est pas de type InB() "
+)		
 
 |Alloc(e)-> 
 		let v, res_mem = eval_expr e env memoire in 
 		let n = get_int v in 
 			let ad, mem2 = allocn res_mem n in 
+				(* print_endline ("allocn : InB ( "^(string_of_int ad )^", "^(string_of_int n)^")"); *)
 				InB(ad,n), mem2
-|ASTNth(e1,e2)->
-			 let InB(a,len), res_mem = eval_expr e1 env memoire in 
-				let v, mem2 = eval_expr e2 env res_mem in 
-				let i = get_int v in 
-					(getVal_adresse (a+i) mem2), mem2
+|ASTNth(e1,e2)->(
+			 let v1, res_mem = eval_expr e1 env memoire in 
+			 let v, mem2 = eval_expr e2 env res_mem in 
+			 let i = get_int v in 
+			 match v1 with
+			 | InB(a,len) -> (getVal_memoire (a+i) mem2), mem2
+			 | _ -> failwith ("nth(e1,"^(string_of_int i )^") :e1 est "^(string_of_valeur v1)^" n'est pas de type InB() ")
+)				
 
 (* Valeurs gauches *)
 let rec eval_lval lv env memoire = 
@@ -255,15 +239,16 @@ IdentLval(id)->
 			let v = getValeur id env  in (
 				match v with
 				 InA(a) -> a, memoire
-				| InB(a,n) -> print_endline ("INB (a = "^(string_of_int a)^"n = "^(string_of_int n)); 
+				| InB(a,n) -> 
+				print_endline ("(LIDB): "^id^" = "^(string_of_valeur v )); 
 					a,memoire 
 				| _ -> failwith "Evaluation lval ident error"
 			) 
 |Nth (lval,expr)->	
-		let InB(a,n), res_mem = eval_expr lval env memoire in 
+		let a, res_mem = eval_lval lval env memoire in 
 			let v, mem2 = eval_expr expr env res_mem in 
 			let i = get_int v in
-			print_endline ("a = "^(string_of_int a)^"i = "^(string_of_int i)); 
+			(* print_endline ("a = "^(string_of_int a)^"i = "^(string_of_int i));  *)
 				(a+i), mem2 
 
 (********************* APS2 *********************)
@@ -284,9 +269,8 @@ match dec with
 	let v = dec_func_rec s expr args in
 		(s,v)::env , memoire
 
-|Var(id,letype) -> adresse := !adresse + 1 ; 
-					let m = alloc memoire  in  
-					( id,InA(!adresse) )::env , m 
+|Var(id,letype) -> let a,m = alloc memoire  in  
+					( id,InA(a))::env , m 
 
 |ASTProc(id,args,bloc)-> 
 	let v = dec_proc id args bloc in 
@@ -360,7 +344,9 @@ and appli_proc p list_v env memoire w=
 (*Programme*)
 let evalProgram p = 
 match p with
-|Cmds(cmds) -> eval_cmds cmds [] [] []
+|Cmds(cmds) -> 
+let mem = Array.make 0 Vide in 
+eval_cmds cmds [] mem []
 	
 	
 (*Print le flux de sortie*)
