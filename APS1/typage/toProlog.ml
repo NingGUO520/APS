@@ -291,7 +291,7 @@ Cmds(cmds)->(
 	Printf.printf"[";	
 	print_cmds cmds;
 	Printf.printf"]";	
-	Printf.printf")"
+	Printf.printf")."
 
 	)
 

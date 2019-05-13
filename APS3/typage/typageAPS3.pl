@@ -55,15 +55,15 @@ typeStat(G,ifProc(B,BLOCK1,BLOCK2),void):-typeExpr(G,B,bool),typeBlock(G,BLOCK1,
 typeStat(G,ifProc(B,BLOCK1,BLOCK2),T):-typeExpr(G,B,bool),typeBlock(G,BLOCK1,T),typeBlock(G,BLOCK2,T).
 
 /* IF1 */
-typeStat(G,ifProc(B,BLOCK1,BLOCK2),t_void):-typeExpr(G,B,bool),typeBlock(G,BLOCK1,void),typeBlock(G,BLOCK2,T).
+typeStat(G,ifProc(B,BLOCK1,BLOCK2),t_void):-typeExpr(G,B,bool),typeBlock(G,BLOCK1,void),typeBlock(G,BLOCK2,_).
 
 /* IF2 */
-typeStat(G,ifProc(B,BLOCK1,BLOCK2),t_void):-typeExpr(G,B,bool),typeBlock(G,BLOCK1,T),typeBlock(G,BLOCK2,void).
+typeStat(G,ifProc(B,BLOCK1,BLOCK2),t_void):-typeExpr(G,B,bool),typeBlock(G,BLOCK1,_),typeBlock(G,BLOCK2,void).
 
 /*WHILE*/
 typeStat(G,while(B,BLOC),void):-typeExpr(G,B,bool),typeBlock(G,BLOC,void).
 
-typeStat(G,while(B,BLOC),t_void):-typeExpr(G,B,bool),typeBlock(G,BLOC,T).
+typeStat(G,while(B,BLOC),t_void):-typeExpr(G,B,bool),typeBlock(G,BLOC,_).
 
 /*********************APS3********************/
 
@@ -130,6 +130,14 @@ typeBlock(G,CMDS,T):-append(CMDS,[epsilon],L),typeCmds(G,L,T).
 /*Programmes*/
 typePro(program(CMDS),void):-append(CMDS,[epsilon],L),typeCmds([],L,void).
 
+
+
+typeProg(P,true):-typePro(P,void).
+
+main_stdin :-
+read(user_input,T),
+typeProg(T,R),
+print(R).
 
 
 

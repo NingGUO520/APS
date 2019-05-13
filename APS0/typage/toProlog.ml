@@ -280,7 +280,7 @@ Cmds(cmds)->(
 	Printf.printf"[";	
 	print_cmds cmds;
 	Printf.printf"]";	
-	Printf.printf")"
+	Printf.printf")."
 
 	)
 let texte = open_in Sys.argv.(1)

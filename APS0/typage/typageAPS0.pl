@@ -55,3 +55,10 @@ typeCmds(_,[epsilon],void).
 
 /*Programmes*/
 typePro(program(CMDS),void):-append(CMDS,[epsilon],L),typeCmds([],L,void).
+
+typeProg(P,true):-typePro(P,void).
+
+main_stdin :-
+read(user_input,T),
+typeProg(T,R),
+print(R).

@@ -97,6 +97,13 @@ typePro(program(CMDS),void):-append(CMDS,[epsilon],L),typeCmds([],L,void).
 /*Blocs de commandes*/
 typeBlock(G,CMDS,void):-append(CMDS,[epsilon],L),typeCmds(G,L,void).
 
+typeProg(P,true):-typePro(P,void).
+
+main_stdin :-
+read(user_input,T),
+typeProg(T,R),
+print(R).
+
 
 
 

@@ -34,18 +34,6 @@ typeExpr(G,X,T):-mem((X,T),G).
 typeExpr(G,astFuncExpr(ARGS,E),typeFunc(TS,T)):-getTypes(ARGS,TS),append(G,ARGS,GG),typeExpr(GG,E,T).
 /*Application*/
 typeExpr(G,astExprs(F,LE),T):-typeExpr(G,F,typeFunc(LT,T)),typeExprs(G,LE,LT).
-/*ECHO*/
-typeStat(G,echo(E),void):-typeExpr(G,E,int).
-
-/*Déclaration*/
-/*Déclaration const*/
-typeDec(G,const(X,T,E),[(X,T)|G]):-typeExpr(G,E,T).
-
-/*Déclaration fonction*/
-typeDec(G,fun(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
-
-/*Déclaration de fonction récursive*/
-typeDec(G,funRec(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,[(X,typeFunc(TS,T))],GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
 
 
 /*Suites de commandes*/
@@ -64,6 +52,16 @@ typePro(program(CMDS),void):-append(CMDS,[epsilon],L),typeCmds([],L,void).
 
 /*Blocs de commandes*/
 typeBlock(G,CMDS,void):-append(CMDS,[epsilon],L),typeCmds(G,L,void).
+/*Déclaration*/
+/*Déclaration const*/
+typeDec(G,const(X,T,E),[(X,T)|G]):-typeExpr(G,E,T).
+
+/*Déclaration fonction*/
+typeDec(G,fun(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
+
+/*Déclaration de fonction récursive*/
+typeDec(G,funRec(X,T,ARGS,E),[(X,typeFunc(TS,T))|G]):-append(G,ARGS,G2),append(G2,[(X,typeFunc(TS,T))],GG),typeExpr(GG,E,T),getTypes(ARGS,TS).
+
 
 /*La déclaration d’une variable*/
 typeDec(G,var(X,T),[(X,T)|G]).
@@ -77,6 +75,9 @@ typeDec(G,proc(X,ARGS,BLOCK),[(X,typeFunc(LT,void))|G]):-append(G,ARGS,GG),typeB
 typeDec(G,procRec(X,ARGS,BLOCK),[(X,typeFunc(LT,void))|G]):- getTypes(ARGS,LT),append(G,ARGS,G2),append(G2,[(X,typeFunc(LT,void))],GG),typeBlock(GG,BLOCK,void).
 
 /*Instructions*/
+/*ECHO*/
+typeStat(G,echo(E),void):-typeExpr(G,E,int).
+
 /*Set*/
 typeStat(G,set(X,E),void):-typeExpr(G,X,T),typeExpr(G,E,T).
 /*IF*/
@@ -87,6 +88,13 @@ typeStat(G,while(B,BLOC),void):-typeExpr(G,B,bool),typeBlock(G,BLOC,void).
 typeStat(G,call(X,LE),void):-typeExprs(G,LE,LT),typeExpr(G,X,typeFunc(LT,void)).
 
 
+
+typeProg(P,true):-typePro(P,void).
+
+main_stdin :-
+read(user_input,T),
+typeProg(T,R),
+print(R).
 
 
 
