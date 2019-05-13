@@ -1,4 +1,0 @@
-[
-  CONST x int 23;
-  ECHO (mul x 3)
-]

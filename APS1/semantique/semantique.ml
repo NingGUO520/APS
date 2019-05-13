@@ -28,17 +28,17 @@ let get_int v =
 	InN(n) -> n
 	|_->failwith "probmème get_int"
 
-	let rec print_env env = 
-		match env with
-		|[] -> ()
-		|a::l-> let (x,v) = a in 
-					match  v with
-					| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
-									print_env l)
-					| InF(e,args,env_f) -> ( print_string (x^"  = Inf\n");	print_env l)		
-					
-					| InFR (nom,valeur )->	( print_string (x^"  = InFR\n");	print_env l)				
-					| _-> ( print_string (x^" = "^(string_of_valeur v )^"\n");			
+let rec print_env env = 
+	match env with
+	|[] -> ()
+	|a::l-> let (x,v) = a in 
+			match  v with
+			| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
+							print_env l)
+			| InF(e,args,env_f) -> ( print_string (x^"  = Inf\n");	print_env l)		
+			
+			| InFR (nom,valeur )->	( print_string (x^"  = InFR\n");	print_env l)				
+			| _-> ( print_string (x^" = "^(string_of_valeur v )^"\n");			
 									print_env l)
 	
 
