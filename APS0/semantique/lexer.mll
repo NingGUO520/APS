@@ -10,8 +10,11 @@ rule token = parse
 	| "sub"            { MINUS }
 	| "mul"            { TIMES }
 	| "div"            { DIV }
+	| "not"		   { NOT }
+	| "and"		   { AND }
+	| "or"		   { OR }
 	| "eq"		   { EQ }
-	| "lt" 		   { LT }
+	| "lt"		   { LT}
 	| '('              { LPAR }
 	| ')'              { RPAR }
 	| '['              { LCRO}

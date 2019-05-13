@@ -1,5 +1,6 @@
 type op = Add | Mul | Sub | Div | Eq | Lt
-type bp =  Not of int | And of int*int | Or of int*int 
+type bp =  And  | Or 
+type not = Not
 
 
 type tprim = Int | Bool 
@@ -9,7 +10,7 @@ type arg = ASTArg of string*letype
 type args = Arg of arg |Args of arg*args
 
 type expr = ASTBool of bool |ASTNum of int | ASTId of string | ASTOPrim of op*expr*expr | ASTIf of expr*expr*expr 
-		|ASTFuncExpr of args*expr | ASTExprs of expr*exprs | ASTBPrim of bp
+		|ASTFuncExpr of args*expr | ASTExprs of expr*exprs |ASTBPrim of bp*expr*expr | ASTNot of not*expr
 and exprs = Expr of expr | Exprs of expr*exprs
 
 type stat = Echo of expr

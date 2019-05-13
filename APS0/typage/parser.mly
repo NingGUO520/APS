@@ -36,6 +36,12 @@ expr:
 | LCRO args RCRO expr {ASTFuncExpr($2,$4)}
 | LPAR expr exprs RPAR {ASTExprs($2,$3)}
 
+| LPAR NOT expr RPAR     { ASTNot(Ast.Not, $3) }
+| LPAR AND expr expr RPAR  { ASTBPrim(Ast.And , $3,$4) }
+| LPAR OR expr expr RPAR   { ASTBPrim(Ast.Or, $3,$4) }
+| TRUE  { ASTBool(true) }
+| FALSE { ASTBool(false) }
+
 ;
 
 exprs:

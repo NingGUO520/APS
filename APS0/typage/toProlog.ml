@@ -58,61 +58,144 @@ Arg(arg)->(
 )
 
 
-let rec print_prolog e =
-match e with
-ASTNum n -> Printf.printf"%d" n
-| ASTId x -> Printf.printf"%s" x
-| ASTOPrim(op, e1, e2) -> (
-	Printf.printf"%s" (string_of_op op);
-	Printf.printf"(";
-	print_prolog e1;
-	Printf.printf",";
-	print_prolog e2;
-	Printf.printf")"
+
+let rec print_expr e =
+	match e with
+	|ASTNum n -> Printf.printf"%d" n
+	| ASTId x -> Printf.printf"%s" x
+	| ASTOPrim(op, e1, e2) -> (
+		Printf.printf"%s" (string_of_op op);
+		Printf.printf"(";
+		print_expr e1;
+		Printf.printf",";
+		print_expr e2;
+		Printf.printf")"
+		)
+	|ASTBPrim(bp,e1,e2)->(
+		Printf.printf"%s" (string_of_bp bp);
+		Printf.printf"(";
+		print_expr e1;
+		Printf.printf",";
+		print_expr e2;
+		Printf.printf")"
 	)
-|ASTBool b -> Printf.printf"%b" b
-|ASTIf(e1,e2,e3)-> (
-	Printf.printf"if";
-	Printf.printf"(";
-	print_prolog e1;
-	Printf.printf",";
-	print_prolog e2;
-	Printf.printf",";
-	print_prolog e3;
-	Printf.printf")"	
+	|ASTNot(not,e)->(
+		Printf.printf "not";
+		Printf.printf"(";
+		print_expr e;
+		Printf.printf")"
 	)
-|ASTFuncExpr(args,e)->(
-	
-	Printf.printf"astFuncExpr";
-	Printf.printf"(";
-	Printf.printf"[";
-	print_args args;
-	Printf.printf"]";
-	Printf.printf",";
-	print_prolog e;
-	Printf.printf")"
-	)
-|ASTExprs(expr,exprs)->(
-	Printf.printf"astExprs";
-	Printf.printf"(";
-	print_prolog expr;
-	Printf.printf",";
-	Printf.printf"[";
-	print_exprs exprs;
-	Printf.printf"]";
-	Printf.printf")"	
+	|ASTBool b -> Printf.printf"%b" b
+	|ASTIf(e1,e2,e3)-> (
+		Printf.printf"if";
+		Printf.printf"(";
+		print_expr e1;
+		Printf.printf",";
+		print_expr e2;
+		Printf.printf",";
+		print_expr e3;
+		Printf.printf")"	
+		)
+	|ASTFuncExpr(args,e)->(
+		
+		Printf.printf"astFuncExpr";
+		Printf.printf"(";
+		Printf.printf"[";
+		print_args args;
+		Printf.printf"]";
+		Printf.printf",";
+		print_expr e;
+		Printf.printf")"
+		)
+	|ASTExprs(expr,exprs)->(
+		Printf.printf"astExprs";
+		Printf.printf"(";
+		print_expr expr;
+		Printf.printf",";
+		Printf.printf"[";
+		print_exprs exprs;
+		Printf.printf"]";
+		Printf.printf")"	
+		)
+	and  print_exprs exprs = 
+	match exprs with
+	Expr(e)->(print_expr e)
+	|
+	Exprs(e,es)->(
+		print_expr e;
+		Printf.printf",";
+		print_exprs es;
 	)
 
-and  print_exprs exprs = 
-match exprs with
-Expr(e)->(print_prolog e)
-|
-Exprs(e,es)->(
-	print_prolog e;
-	Printf.printf",";
-	print_exprs es;
-)
 
+	let rec print_expr e =
+		match e with
+		|ASTNum n -> Printf.printf"%d" n
+		| ASTId x -> Printf.printf"%s" x
+		| ASTOPrim(op, e1, e2) -> (
+			Printf.printf"%s" (string_of_op op);
+			Printf.printf"(";
+			print_expr e1;
+			Printf.printf",";
+			print_expr e2;
+			Printf.printf")"
+			)
+		|ASTBPrim(bp,e1,e2)->(
+			Printf.printf"%s" (string_of_bp bp);
+			Printf.printf"(";
+			print_expr e1;
+			Printf.printf",";
+			print_expr e2;
+			Printf.printf")"
+		)
+		|ASTNot(not,e)->(
+			Printf.printf "not";
+			Printf.printf"(";
+			print_expr e;
+			Printf.printf")"
+		)
+		|ASTBool b -> Printf.printf"%b" b
+		|ASTIf(e1,e2,e3)-> (
+			Printf.printf"if";
+			Printf.printf"(";
+			print_expr e1;
+			Printf.printf",";
+			print_expr e2;
+			Printf.printf",";
+			print_expr e3;
+			Printf.printf")"	
+			)
+		|ASTFuncExpr(args,e)->(
+			
+			Printf.printf"astFuncExpr";
+			Printf.printf"(";
+			Printf.printf"[";
+			print_args args;
+			Printf.printf"]";
+			Printf.printf",";
+			print_expr e;
+			Printf.printf")"
+			)
+		|ASTExprs(expr,exprs)->(
+			Printf.printf"astExprs";
+			Printf.printf"(";
+			print_expr expr;
+			Printf.printf",";
+			Printf.printf"[";
+			print_exprs exprs;
+			Printf.printf"]";
+			Printf.printf")"	
+			)
+		and  print_exprs exprs = 
+		match exprs with
+		Expr(e)->(print_expr e)
+		|
+		Exprs(e,es)->(
+			print_expr e;
+			Printf.printf",";
+			print_exprs es;
+		)
+			
 
 
 let print_stat stat = 
@@ -120,7 +203,7 @@ match stat with
 Echo(expr)->(
 	Printf.printf"echo";
 	Printf.printf"(";
-	print_prolog expr;
+	print_expr expr;
 	Printf.printf")"
 
 )
@@ -134,7 +217,7 @@ Const(s,t,expr)->(
 	Printf.printf",";
 	print_type t;
 	Printf.printf",";
-	print_prolog expr;
+	print_expr expr;
 	Printf.printf")"
 
 	)
@@ -150,7 +233,7 @@ Const(s,t,expr)->(
 	print_args args;
 	Printf.printf"]";
 	Printf.printf",";
-	print_prolog expr;
+	print_expr expr;
 	Printf.printf")"
 
 
@@ -167,7 +250,7 @@ Const(s,t,expr)->(
 	print_args args;
 	Printf.printf"]";
 	Printf.printf",";
-	print_prolog expr;
+	print_expr expr;
 	Printf.printf")"
 )
 

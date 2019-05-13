@@ -40,7 +40,22 @@ match env with
 			| InFR (nom,valeur )->	( print_string (x^"  = InFR\n");	print_env l)				
 			| _-> ( print_string (x^" = "^(string_of_valeur v )^"\n");			
 							print_env l)
-			
+
+let rec modifier_env env1 env2 = 
+	match env2 with 
+	|[]-> env1
+	|a::l -> (let x,v = a in if List.mem_assoc x env1 then (
+												  let env3 = 	List.remove_assoc x env1 in 
+													let nouveau_env = (x,v)::env3 in 
+													modifier_env nouveau_env l
+												)else (
+													let nouveau_env = (x,v)::env1 in 
+													modifier_env nouveau_env l
+												)
+											
+					
+	)
+												  
 (***************** APS2 Gestion des memoires *****************)
 let allocn mem1 taille =
 	
@@ -159,13 +174,18 @@ and appli_func f list_v env memoire w =
 	(* print_endline ("list_v = "^(string_of_valeur (List.hd list_v))); *)
 	match f with
 	|InF(e,args,env_f)-> let func_env = appli_args args list_v in 
-				let nouveau_env = func_env@env in 
-					eval_expr e nouveau_env memoire w 
+				let env1 = modifier_env env_f func_env in 
+				let env2 = env1@env in 
+				(* print_env env2; *)
+					eval_expr e env2 memoire w 
 					
 	|InFR(nom,func)-> appli_func func list_v env memoire w 
 	|InP(bloc, args, env_p)-> let proc_env = appli_args args list_v in 
-				let nouveau_env = proc_env@env in 
-					eval_bloc bloc nouveau_env memoire w
+				let env1 = modifier_env env_p proc_env  in
+				let env2 = env1@env  in
+				(* print_env env2; *)
+
+					eval_bloc bloc env2 memoire w
 	|InPR(nom,func_pro)-> appli_func func_pro list_v env memoire w 
 				 
 	|_->failwith "It's not a function"

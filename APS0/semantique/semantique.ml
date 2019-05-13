@@ -1,20 +1,59 @@
 open Ast
 
 type valeur = InN of int | InF of expr* (string list)* (string*valeur) list | InFR of string*valeur
+
+let string_of_valeur v = 
+	match v with
+	 | InN (n)-> "InN ("^(string_of_int n )^")"
+	 | InF (expr,args,env)->  "InF "
+	| InFR(f,v)-> "InFR "
+
+
+let get_int v = 
+	match v with
+	InN(n) -> n
+	|_->failwith "probmème get_int"
+
+
 let not x = 
 	match x with
 		|0 -> 1
 		|1 -> 0 
 		|_ -> failwith "probleme argument"
 
-let eval_bprim bp = 
+		let rec print_env env = 
+			match env with
+			|[] -> ()
+			|a::l-> let (x,v) = a in 
+						match  v with
+						| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
+										print_env l)
+						| InF(e,args,env_f) -> ( print_string (x^"  = Inf\n");	print_env l)		
+						
+						| InFR (nom,valeur )->	( print_string (x^"  = InFR\n");	print_env l)				
+						| _-> ( print_string (x^" = "^(string_of_valeur v )^"\n");			
+										print_env l)
+		
+	
+	let rec modifier_env env1 env2 = 
+		match env2 with 
+		|[]-> env1
+		|a::l -> (let x,v = a in if List.mem_assoc x env1 then (
+												let env3 = 	List.remove_assoc x env1 in 
+												let nouveau_env = (x,v)::env3 in 
+												modifier_env nouveau_env l
+												)else (
+												let nouveau_env = (x,v)::env1 in 
+												modifier_env nouveau_env l
+												)																				
+		)
+let eval_bprim bp n1 n2 = 
 	match bp with
-	|Not b -> if b == 0 then 1 else if b == 1 then 0 else failwith "probleme argument"
-	|And (n1,n2)-> 
+	|And -> 
 		if n1 == 0 then 0
  		else if n1 ==1 then n2 
 		else failwith "probleme argument"
-	|Or (n1,n2)->
+	|Or ->
 		if n1 == 0 then n2 
 		else if n1 == 1 then 1 
 		else failwith "probleme argument"
@@ -61,8 +100,19 @@ match env with
 			| InF(e,args,env_f) -> ( print_string (x^" Inf\n");	print_env l)		
 			
 			| InFR (nom,valeur )->	( print_string (x^" InFR\n");	print_env l)				
-			| _-> ( print_string (x^" \n");			
-							print_env l)
+		
+let rec modifier_env env1 env2 = 
+	match env2 with 
+	|[]-> env1
+	|a::l -> (let x,v = a in if List.mem_assoc x env1 then (
+											let env3 = 	List.remove_assoc x env1 in 
+											let nouveau_env = (x,v)::env3 in 
+											modifier_env nouveau_env l
+											)else (
+											let nouveau_env = (x,v)::env1 in 
+											modifier_env nouveau_env l
+											)																				
+	)
 			
 
 let rec appli_args args list_value = 
@@ -82,10 +132,10 @@ let rec get_list_value exprs env =
 and appli_func f list_v env = 
 	match f with
 	|InF(e,args,env_f)-> let func_env = appli_args args list_v in 
-				let nouveau_env = func_env@env_f@env in 
-					print_env env_f;
-					eval_expr e nouveau_env 
-					
+				let env1 = modifier_env env_f func_env in 
+				let env2 = env1@env in 
+				(* print_env env2; *)
+					eval_expr e env2  
 	|InFR(nom,func)-> appli_func func list_v env
 	|_->failwith "It's not a function"
 
@@ -96,9 +146,14 @@ match expr with
 |ASTNum n -> InN(n)
 
 |ASTOPrim(op,e1,e2)-> 
-		let v1 = get_value(eval_expr e1 env) and v2 = get_value(eval_expr e2 env) in 
+		let v1 = get_int(eval_expr e1 env ) and v2 = get_int(eval_expr e2 env ) in 
 			InN(eval_prim op v1 v2)
-|ASTBPrim bp -> InN(eval_bprim bp)
+|ASTBPrim(bp,e1,e2) -> 
+			let v1 = get_int(eval_expr e1 env ) and v2 = get_int(eval_expr e2 env ) in 
+				InN(eval_bprim bp v1 v2)
+|ASTNot(n,e) ->	let v = get_int(eval_expr e env ) in 
+					 InN(not v)
+	
 |ASTId id -> (getValeur id env) 	
 |ASTBool b -> if b == true then InN(1) else InN(0)
 |ASTIf(e1,e2,e3)-> let v1 = get_value(eval_expr e1 env) in 

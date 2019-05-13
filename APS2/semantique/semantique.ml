@@ -19,6 +19,35 @@ match v with
 | InB (a, n )->   "InB ("^(string_of_int a )^" , "^(string_of_int n )^")"
 | Any ->  "Any"
 
+
+let rec print_env env = 
+	match env with
+	|[] -> ()
+	|a::l-> let (x,v) = a in 
+				match  v with
+				| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
+								print_env l)
+				| InF(e,args,env_f) -> ( print_string (x^"  = Inf\n");	print_env l)		
+				
+				| InFR (nom,valeur )->	( print_string (x^"  = InFR\n");	print_env l)				
+				| _-> ( print_string (x^" = "^(string_of_valeur v )^"\n");			
+								print_env l)
+	
+	let rec modifier_env env1 env2 = 
+		match env2 with 
+		|[]-> env1
+		|a::l -> (let x,v = a in if List.mem_assoc x env1 then (
+														let env3 = 	List.remove_assoc x env1 in 
+														let nouveau_env = (x,v)::env3 in 
+														modifier_env nouveau_env l
+													)else (
+														let nouveau_env = (x,v)::env1 in 
+														modifier_env nouveau_env l
+													)
+												
+						
+		)
+														
 (***************** APS2 Gestion des memoires *****************)
 let allocn mem1 taille =
 	
@@ -160,8 +189,10 @@ let rec get_list_value exprs env memoire =
 and appli_func f list_v env memoire = 
 	match f with
 	|InF(e,args,env_f)-> let func_env = appli_args args list_v in 
-				let nouveau_env = func_env@env_f@env in 
-					eval_expr e nouveau_env memoire
+					let env1 = modifier_env env_f func_env in 
+					let env2 = env1@env in 
+					(* print_env env2; *)
+						eval_expr e env2 memoire 
 					
 	|InFR(nom,func)-> appli_func func list_v env memoire
 	|_->failwith "It's not a function"
@@ -238,19 +269,23 @@ match lv  with
 IdentLval(id)-> 
 			let v = getValeur id env  in (
 				match v with
-				 InA(a) -> a, memoire
+				InA(a) -> InA(a), memoire
 				| InB(a,n) -> 
-				print_endline ("(LIDB): "^id^" = "^(string_of_valeur v )); 
-					a,memoire 
+							(* print_endline ("(LIDB): "^id^" = "^(string_of_valeur v ));  *)
+							InB(a,n),memoire 
 				| _ -> failwith "Evaluation lval ident error"
 			) 
-|Nth (lval,expr)->	
-		let a, res_mem = eval_lval lval env memoire in 
-			let v, mem2 = eval_expr expr env res_mem in 
-			let i = get_int v in
+|Nth (lval,expr)->	(
+		let InB(a,n), res_mem = eval_lval lval env memoire in 
+			let InN(v), mem2 = eval_expr expr env res_mem in 	
+			let ad = a+v in 
+			let res = getVal_memoire 	ad  mem2  in 
+			match res with 
+			InB(b,len)-> InB(b,len), mem2
+			|_->	InA(ad), mem2 
 			(* print_endline ("a = "^(string_of_int a)^"i = "^(string_of_int i));  *)
-				(a+i), mem2 
 
+)
 (********************* APS2 *********************)
 
 
@@ -321,7 +356,7 @@ and eval_stat stat env memoire w =
 
 	|SetLval(lv,expr)->
 				let v, res_mem = eval_expr expr env memoire in 
-					let a, mem2 =  eval_lval lv env res_mem  in 
+					let InA(a), mem2 =  eval_lval lv env res_mem  in 
 					let mem = modifer_mem mem2 a v in mem, w 
 	
 

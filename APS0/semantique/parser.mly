@@ -7,8 +7,8 @@ open Ast
 %token <int> NUM
 %token <string> IDENT
 %token PLUS MINUS TIMES DIV LT EQ
-%token LPAR RPAR LCRO RCRO SEPARATOR VIRGU ETOILE FLECHE DPOINTS
-%token EOL
+%token LPAR RPAR LCRO RCRO SEPARATOR VIRGU ETOILE FLECHE DPOINTS 
+%token EOL NOT AND OR 
 %token CONST FUN REC ECHO IF
 %token BOOL INT
 %token TRUE FALSE
@@ -35,6 +35,12 @@ expr:
 | LPAR IF expr expr expr RPAR {ASTIf($3,$4,$5)}
 | LCRO args RCRO expr {ASTFuncExpr($2,$4)}
 | LPAR expr exprs RPAR {ASTExprs($2,$3)}
+
+| LPAR NOT expr RPAR     { ASTNot(Ast.Not, $3) }
+| LPAR AND expr expr RPAR  { ASTBPrim(Ast.And , $3,$4) }
+| LPAR OR expr expr RPAR   { ASTBPrim(Ast.Or, $3,$4) }
+| TRUE  { ASTBool(true) }
+| FALSE { ASTBool(false) }
 
 ;
 

@@ -7,6 +7,15 @@ type valeur = Vide | InN of int | InF of expr* (string list)* (string*valeur) li
 
 let adresse = ref 0
 
+let string_of_valeur v = 
+	match v with
+	 Vide -> "Vide  "
+	 | InN (n)-> "InN ("^(string_of_int n )^")"
+	 | InF (expr,args,env)->  "InF "
+	| InFR(f,v)-> "InFR "
+	| InA (a)->   "InA ("^(string_of_int a )^")"
+	| InP (bloc, args, env)-> "InP "
+	| InPR (p,v) ->   "InPR "
 
 
 let alloc memoire  = 
@@ -19,20 +28,32 @@ let get_int v =
 	InN(n) -> n
 	|_->failwith "probmème get_int"
 
-let rec print_env env = 
-match env with
-|[] -> ()
-|a::l-> let (x,v) = a in 
-			match  v with
-			| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
-							print_env l)
-			| InF(e,args,env_f) -> ( print_string (x^" Inf\n");	print_env l)		
-			
-			| InFR (nom,valeur )->	( print_string (x^" InFR\n");	print_env l)				
-			| _-> ( print_string (x^" \n");			
-							print_env l)
-			
-		
+	let rec print_env env = 
+		match env with
+		|[] -> ()
+		|a::l-> let (x,v) = a in 
+					match  v with
+					| InN(n) -> ( print_string (x^" = "^(string_of_int n)^"\n");			
+									print_env l)
+					| InF(e,args,env_f) -> ( print_string (x^"  = Inf\n");	print_env l)		
+					
+					| InFR (nom,valeur )->	( print_string (x^"  = InFR\n");	print_env l)				
+					| _-> ( print_string (x^" = "^(string_of_valeur v )^"\n");			
+									print_env l)
+	
+
+let rec modifier_env env1 env2 = 
+	match env2 with 
+	|[]-> env1
+	|a::l -> (let x,v = a in if List.mem_assoc x env1 then (
+											let env3 = 	List.remove_assoc x env1 in 
+											let nouveau_env = (x,v)::env3 in 
+											modifier_env nouveau_env l
+											)else (
+											let nouveau_env = (x,v)::env1 in 
+											modifier_env nouveau_env l
+											)																				
+	)
 
 		
 let modifer_mem memoire a v =
@@ -131,8 +152,10 @@ let rec get_list_value exprs env memoire =
 and appli_func f list_v env memoire = 
 	match f with
 	|InF(e,args,env_f)-> let func_env = appli_args args list_v in 
-				let nouveau_env = func_env@env_f@env in 
-					eval_expr e nouveau_env memoire
+					let env1 = modifier_env env_f func_env in 
+					let env2 = env1@env in 
+					(* print_env env2; *)
+						eval_expr e env2 memoire 
 					
 	|InFR(nom,func)-> appli_func func list_v env memoire
 	|_->failwith "It's not a function"
